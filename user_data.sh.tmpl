@@ -1,0 +1,59 @@
+#!/bin/bash
+cd /home/ubuntu
+touch one.html
+set -e
+
+STAGE="${stage}"
+VALIDATED_BUCKET_NAME="${validated_bucket_name}"
+SHUTDOWN_DELAY_MINUTES="${shutdown_delay_minutes}"
+DISTRO=$(cat /etc/os-release | grep ^ID= | cut -d= -f2 | tr -d '"')
+
+
+if [[ "$DISTRO" == "amzn" || "$DISTRO" == "centos" || "$DISTRO" == "rhel" ]]; then
+sudo yum update -y
+sudo yum install wget coreutils git -y
+sudo wget https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.rpm
+sudo rpm -ivh jdk-21_linux-x64_bin.rpm || true
+echo 'export JAVA_HOME=/usr/java/jdk-21' | sudo tee -a /etc/profile
+echo 'export PATH=$JAVA_HOME/bin:$PATH' | sudo tee -a /etc/profile
+source /etc/profile
+sleep 30
+sudo -u ec2-user git clone https://github.com/techeazy-consulting/techeazy-devops /home/ec2-user/app
+sudo chown -R ec2-user:ec2-user /home/ec2-user/app
+cd /home/ec2-user/app
+chmod +x mvnw
+sudo nohup ./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=80" > app.log 2>&1 &
+
+
+sudo yum  install -y aws-cli
+sleep 30
+aws s3 cp /var/log/cloud-init.log s3://$VALIDATED_BUCKET_NAME/ec2-logs/cloud-init.log
+aws s3 cp /home/ec2-user/app/app.log s3://$VALIDATED_BUCKET_NAME/app/logs/my-app.log
+
+elif [[ "$DISTRO" == "ubuntu" || "$DISTRO" == "debian" ]]; then
+sudo apt-get update -y
+sudo apt-get install wget coreutils git -y
+sudo wget https://download.oracle.com/java/21/latest/jdk-21_linux-x64_bin.deb
+sudo dpkg -i jdk-21_linux-x64_bin.deb
+echo 'export JAVA_HOME=/usr/java/jdk-21' | sudo tee -a /etc/profile
+echo 'export PATH=$JAVA_HOME/bin:$PATH' | sudo tee -a /etc/profile
+source /etc/profile
+sleep 20
+sudo -u ubuntu git clone https://github.com/techeazy-consulting/techeazy-devops /home/ubuntu/app
+sudo chown -R ubuntu:ubuntu /home/ubuntu/app
+cd /home/ubuntu/app
+chmod +x mvnw
+sudo nohup ./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=80" > app.log 2>&1 &
+
+sudo apt update
+sudo apt install -y unzip curl
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+unzip awscliv2.zip
+sudo ./aws/install
+
+sleep 30
+aws s3 cp /var/log/cloud-init.log s3://$VALIDATED_BUCKET_NAME/ec2-logs/cloud-init.log
+aws s3 cp /home/ubuntu/app/app.log s3://$VALIDATED_BUCKET_NAME/app/logs/my-app.log
+fi
+
+sudo shutdown -h +"$SHUTDOWN_DELAY_MINUTES"
