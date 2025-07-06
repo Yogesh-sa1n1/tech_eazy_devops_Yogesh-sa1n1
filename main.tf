@@ -7,7 +7,7 @@ description = "Name of the S3 bucket to store logs"
 type = string
 }
 
-# Ensure bucket_name is provided
+
 locals {
 validated_bucket_name = length(trimspace(var.bucket_name)) > 0 ? var.bucket_name : (throw("Error: bucket_name variable must be provided"))
 }
