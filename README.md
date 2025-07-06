@@ -27,11 +27,15 @@ This Terraform project provisions an AWS EC2 instance to run a Java Spring Boot 
 ---
 
 ## 📁 Project Structure
-.
+
 ├── main.tf # Main Terraform configuration
+
 ├── variables.tf # Input variables
+
 ├── outputs.tf # Output values like EC2 IP and key name
+
 ├── user_data.sh.tmpl # User data script for EC2 instance initialization
+
 
 
 
