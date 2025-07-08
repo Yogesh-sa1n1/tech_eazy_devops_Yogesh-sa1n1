@@ -33,10 +33,10 @@ jobs:
       - name: Terraform Validate
         run: terraform validate
 
-      - name: Terraform Plan
-        run: terraform plan -out=tfplan
+      - name: Terraform Plan (with dev.tfvars)
+        run: terraform plan -var-file="dev.tfvars" -out=tfplan
 
-      - name: Terraform Apply
+      - name: Terraform Apply (with dev.tfvars)
         run: terraform apply -auto-approve tfplan
 
 
