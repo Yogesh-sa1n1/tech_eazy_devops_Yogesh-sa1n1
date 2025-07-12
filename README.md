@@ -1,4 +1,4 @@
-# AWS EC2 Java App Infrastructure with Auto Log Upload to S3
+# AWS EC2 Java App Infrastructure with Auto Log Upload to S3 + GitHub Action Whenever user perform push request all stuff happen
 
 This Terraform project provisions an AWS EC2 instance to run a Java Spring Boot application and automatically uploads system and app logs to an S3 bucket during shutdown.
 
@@ -44,3 +44,5 @@ This Terraform project provisions an AWS EC2 instance to run a Java Spring Boot 
 ### 2. Apply the Configuration
             sudo terraform apply -var-file="dev.tfvars"
             sudo terraform apply -var-file="prod.tfvars"
+### Alternative
+    git push
